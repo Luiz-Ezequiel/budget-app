@@ -29,8 +29,8 @@ class Category:
         return self.balance
     
     def transfer(self, amount, category):
-        if self.withdraw(amount, f'Transfer to {category}'):
-            category.deposit(amount, f'Transfer to {category}')
+        if self.withdraw(amount, f'Transfer to {category.category}'):
+            category.deposit(amount, f'Transfer from {self.category}')
             return True
         return False
 
@@ -40,4 +40,35 @@ class Category:
         return True
     
 def create_spend_chart(categories):
-    pass
+    amount_spent = []
+    for category in categories:
+        spent = 0
+        for item in category.ledger:
+            if item["amount"] < 0:
+                spent += abs(item['amount'])
+        amount_spent.append(round(spent, 2))
+
+    total = round(sum(amount_spent), 2)
+    percentage = list(map(lambda amount: int((((amount / total) * 10) // 1) * 10), amount_spent))
+
+    header = "Percentage spent by category\n"
+
+    chart = ""
+    for value in reversed(range(0, 101, 10)):
+        chart += str(value).rjust(3) + '|'
+        for percent in percentage:
+            if percent >= value:
+                chart += ' o '
+            else:
+                chart += '   '
+        chart += " \n"
+
+    footer = "    " + "-" * ((3 * len(categories)) + 1) + "\n"
+    descriptions = list(map(lambda category: category.category, categories))
+    max_length = max(map(lambda description: len(description), descriptions))
+    descriptions = list(map(lambda description: description.ljust(max_length), descriptions))
+    for x in zip(*descriptions):
+        footer += "    " + "".join(map(lambda s: s.center(3), x)) + " \n"
+
+    return (header + chart + footer).rstrip("\n")
+
