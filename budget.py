@@ -40,6 +40,7 @@ class Category:
         return True
     
 def create_spend_chart(categories):
+    # Calculate the total amount spent in each category
     amount_spent = []
     for category in categories:
         spent = 0
@@ -49,26 +50,25 @@ def create_spend_chart(categories):
         amount_spent.append(round(spent, 2))
 
     total = round(sum(amount_spent), 2)
-    percentage = list(map(lambda amount: int((((amount / total) * 10) // 1) * 10), amount_spent))
+
+    percentage = [int((((amount/total) * 10) // 1) * 10) for amount in amount_spent]
 
     header = "Percentage spent by category\n"
 
+    # Build the chart body
     chart = ""
     for value in reversed(range(0, 101, 10)):
-        chart += str(value).rjust(3) + '|'
+        chart += f"{str(value).rjust(3)}|"
         for percent in percentage:
-            if percent >= value:
-                chart += ' o '
-            else:
-                chart += '   '
+            chart += ' o ' if percent >= value else '   '
         chart += " \n"
 
+    # Build the chart footer
     footer = "    " + "-" * ((3 * len(categories)) + 1) + "\n"
-    descriptions = list(map(lambda category: category.category, categories))
-    max_length = max(map(lambda description: len(description), descriptions))
-    descriptions = list(map(lambda description: description.ljust(max_length), descriptions))
+    descriptions = [category.category for category in categories]
+    max_length = max(len(description) for description in descriptions)
+    descriptions = [description.ljust(max_length) for description in descriptions]
     for x in zip(*descriptions):
-        footer += "    " + "".join(map(lambda s: s.center(3), x)) + " \n"
+        footer += "    " + "".join(s.center(3) for s in x) + " \n"
 
     return (header + chart + footer).rstrip("\n")
-
